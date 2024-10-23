@@ -1,21 +1,22 @@
 package com.natanius.nasa.controller;
 
+import static java.lang.System.currentTimeMillis;
 import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 
 import com.natanius.nasa.service.NasaService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-public class MyController {
+public class NasaController {
 
     private final NasaService nasaService;
 
@@ -27,12 +28,14 @@ public class MyController {
 
     @GetMapping("largest-image")
     public ResponseEntity<byte[]> getLargestImage(@RequestParam String sol) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(CONTENT_TYPE, "image/jpeg");
+        long startTime = currentTimeMillis();
         byte[] largestImage = nasaService.getLargestImage(sol);
-        headers.add(CONTENT_LENGTH, String.valueOf(largestImage.length));
-        return new ResponseEntity<>(largestImage, headers, HttpStatus.OK);
+        log.info("Execution time for getLargestImage: {} ms", currentTimeMillis() - startTime);
 
+        return ResponseEntity.ok()
+            .header(CONTENT_TYPE, "image/jpeg")
+            .header(CONTENT_LENGTH, String.valueOf(largestImage.length))
+            .body(largestImage);
     }
 
 }

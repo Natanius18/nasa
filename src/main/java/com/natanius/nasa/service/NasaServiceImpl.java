@@ -34,16 +34,18 @@ public class NasaServiceImpl implements NasaService {
             .map(this::getImageSizeAndLink)
             .max(comparingLong(ImageSizeAndLink::size))
             .map(imageSizeAndLink -> restTemplate.getForObject(imageSizeAndLink.link(), byte[].class))
-            .orElseThrow();
+            .orElseThrow(() -> new ResourceNotFoundException("Failed to find the largest image"));
     }
 
     private ImageSizeAndLink getImageSizeAndLink(String imageUrl) {
         ResponseEntity<Void> response = restTemplate.exchange(imageUrl, HttpMethod.HEAD, null, Void.class);
 
-        if (response.getStatusCode().is3xxRedirection()) {
+        while (response.getStatusCode().is3xxRedirection()) {
             log.info("Redirecting...");
-            return getImageSizeAndLink(response.getHeaders().getFirst(LOCATION));
+            imageUrl = response.getHeaders().getFirst(LOCATION);
+            response = restTemplate.exchange(imageUrl, HttpMethod.HEAD, null, Void.class);
         }
+
         if (response.getStatusCode().is2xxSuccessful()) {
             return new ImageSizeAndLink(response.getHeaders().getContentLength(), imageUrl);
         }
