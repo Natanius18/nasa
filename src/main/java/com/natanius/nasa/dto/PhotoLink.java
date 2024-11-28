@@ -1,10 +1,10 @@
-package com.natanius.nasa;
+package com.natanius.nasa.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-public class NasaPhoto {
+public class PhotoLink {
     private String img_src;
 }
